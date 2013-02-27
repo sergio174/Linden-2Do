@@ -1,0 +1,43 @@
+h1{
+	margin-bottom: 30px;
+}
+.conten{
+	float: none;
+	margin: 50px auto;
+}
+
+.catsList{
+	margin-left: 0;
+}
+.catsList h4{
+	margin-top: 0;
+}
+
+#newTaskCat{
+	border-radius: 0;
+	border-left: none;
+}
+
+table#taskList > tr > td >input[type="checkbox"]{
+	margin: 4px 15px 6px 10px;
+}
+
+table#taskList > tr:hover td{
+	background: #0088cc;
+	color: #FFF;
+}
+
+.icon{
+	cursor: pointer;
+}
+
+table#taskList > tr td i.icon-trash{
+	visibility: hidden;
+}
+table#taskList > tr td i.icon-star-0{
+	opacity: .2;
+}
+table#taskList > tr:hover td i{
+	background-image: url(../libs/bootstrap/img/glyphicons-halflings-white.png);
+	visibility:visible;
+}
