@@ -18,6 +18,20 @@ h1{
 	border-left: none;
 }
 
+.inserted{
+	background: #0088cc;
+	color: #FFF;	
+}
+
+table#taskList > tr > td{
+	
+	transition: all .3s;
+	-moz-transition: all .3s; /* Firefox 4 */
+	-webkit-transition: all .3s; /* Safari and Chrome */
+	-o-transition: all .3s; /* Opera */
+
+}
+
 table#taskList > tr > td >input[type="checkbox"]{
 	margin: 4px 15px 6px 10px;
 }
@@ -41,3 +55,49 @@ table#taskList > tr:hover td i{
 	background-image: url(../libs/bootstrap/img/glyphicons-halflings-white.png);
 	visibility:visible;
 }
+
+ul.sidebarList{
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+ul.sidebarList li{
+	padding: 5px 4px;
+	/*border: solid 1px;*/
+	position: relative;
+}
+ul.sidebarList li i.icon-trash{
+	position: absolute;
+	right: 7px;
+	top: 7px;
+	display: none;
+}
+ul.sidebarList li:hover i.icon-trash{
+	display: inline;
+}
+
+ul.sidebarList li:hover, ul.sidebarList li.catSelected {
+	background: #0088cc;
+	
+}
+ul.sidebarList li a{
+	display: block;
+	padding-right: 30px;
+}
+ul.sidebarList li:hover a, ul.sidebarList li.catSelected a{
+	color: #FFF;
+	text-shadow:none;
+	
+}
+ul.sidebarList li:hover a:hover{
+	text-decoration: none;
+}
+ul.sidebarList li:hover a{
+	
+}
+
+
+
+
+
+

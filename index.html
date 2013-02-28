@@ -25,9 +25,22 @@
         		<h4>
         			Categories
         		</h4>
-        		<ul id="catList" class="nav nav-list">
-		          
+        		<ul id="catList" class="sidebarList">
 		        </ul>
+
+                <br>
+                <br>
+
+                <h4>
+                    Status
+                </h4>
+                <ul id="statusList" class="sidebarList">
+                  <li><a href="#" id="status-0">Pending</a></li>
+                  <li><a href="#" id="status-1">Done</a></li>
+                  <li><a href="#" id="status-all">All</a></li>
+                  
+                  
+                </ul>
 		        
         	</div>
         	<div class="tasks span6">
@@ -58,18 +71,38 @@
 
         </div>
 
+        <div id="deleteCatModal" class="modal hide fade">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Delete category</h3>
+          </div>
+          <div class="modal-body">
+            <p>You are going to delete the category: <h5 id="catDelName">Uncategorized</h5></p>
+            <p>Assign related tasks to this category: 
+                <input type="hidden" id="catDelID">
+                <select id="catDelAssign">
+                </select>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <a href="#" class="btn " data-dismiss="modal" >Close</a>
+            <a id="catDelConfirm" href="#" class="btn btn-primary" data-dismiss="modal" ><i class="icon-white icon-trash"></i> Confirm delete</a>
+          </div>
+        </div>
+
+
         <div class="templates" style="display:none;">
 			<table>
 				<tbody data-template-name="task-row">
 					<tr class="done-{{done}} cat-{{cat}}" id="task-{{id}}" >
-						<td class="taskName">
+						<td class="taskName ">
 							<input type="checkbox"  >
 							{{name}}
 						</td>
-						<td class="taskCat">
-							{{cat}}
+						<td class="taskCat ">
+							{{catname}}
 						</td>
-						<td class="taskImportant">
+						<td class="taskImportant ">
 							<i class="icon icon-star icon-star-{{important}}"></i>
 						</td>
 						<td>
@@ -81,11 +114,19 @@
 
 			<ul data-template-name="cat-row">
 				<li >
-					<a href="#cat-{{id}}">
-						<i class="icon-chevron-right"></i> {{name}}
+					<a id="cat-{{id}}" href="#cat-{{id}}">
+						
+                        {{name}}
 					</a>
+
+                    <i id="delCat-{{id}}" class="icon icon-trash icon-white"  ></i>
+                    <div class="clearfix"></div>
 				</li>
 			</ul>
+
+            <select data-template-name="cat-option">
+                <option value="{{id}}">{{name}}</option>
+            </select>
 		</div>
 
     </body>

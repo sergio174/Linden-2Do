@@ -47,7 +47,7 @@ $(function() {
 			localStorage[LSkey] = JSON.stringify(todos);
 			
 			
-			addTableRow(model);
+			addTableRow(model, true);
 		}
 		
 	});
@@ -56,6 +56,7 @@ $(function() {
 
 	function addTask(data) {
 		
+
 		try {
 			var task = new Task({
 					id: new Date().getTime(),
@@ -97,7 +98,7 @@ $(function() {
 		localStorage.removeItem(LSprefix+id);
 		localStorage[LSkey] = JSON.stringify(todos);
 		
-		$('#task-'+id).fadeOut();
+		$('#task-'+id).fadeOut({complete:function(){$(this).remove()}});
 
 	}
 
@@ -113,13 +114,106 @@ $(function() {
 		return newCatID;
 	}
 
+	function deleteCat(e)
+	{
+		var idDel = $(this).attr('id').split('-')[1];
+		console.log("delete: "+idDel);
+		
+		var optionTemplate = $("[data-template-name='cat-option']").html();
+		var catSelect = $('select#catDelAssign');
+		catSelect.html("");
+		for(i in cats)
+		{
+			if(cats[i].id != idDel)
+			catSelect.append( Mustache.render(optionTemplate, cats[i] ) );
+			else
+			{
+			$("#catDelName").text(cats[i].name);
+			$("#catDelID").val(cats[i].id);
+			}
+		}
+
+
+
+		$('#deleteCatModal').modal();
+	}
+
+	function confirmDeleteCat(e)
+	{
+		var idDel = $("#catDelID").val() ;
+		var catDelAssign = $("#catDelAssign").val();
+
+		
+		for(var i in cats){
+		    if( cats[i].id == idDel )
+		    {
+		        cats.splice(i,1);
+		        break;
+		    }
+		}
+		
+		localStorage[LSprefix + "cats"] = JSON.stringify( cats );
+
+		for(i in todos)
+		{
+			
+			var elemData = JSON.parse(localStorage[LSprefix+todos[i]]);
+
+			//Update related Tasks
+			if(elemData.cat == idDel)
+			{
+				console.log("Reasign "+elemData.name + " to "+catDelAssign);
+				updateTaskField(elemData.id, 'cat', catDelAssign);
+				
+				$("tr#task-"+elemData.id).removeClass('cat-'+idDel).addClass('cat-'+catDelAssign);
+
+				$("tr#task-"+elemData.id+ " td.taskCat").html( getCatBy('id' , catDelAssign).name );
+			}
+
+		}
+
+		// Remove Category Link
+		$('a#cat-' + idDel).parent().remove();
+
+		$('a#cat-' + catDelAssign).trigger('click');
+
+
+	}
+
+
 	function addCatRow(data)
 	{
-		// console.log('CatData:' + JSON.stringify(data) );
 		var lista = $('ul#catList')
 		var template = $("[data-template-name='cat-row']").html();
-
+				
 		lista.append( Mustache.render ( template  , data ) );
+
+		$('a#cat-'+data.id).on('click', showCatTasks);
+		$('i#delCat-'+data.id).on('click', deleteCat);
+	}
+
+
+	function showCatTasks(e)
+	{
+		e.preventDefault();
+
+		var catToShow = "cat-" + $(this).attr('id').split('-')[1];
+
+		$("ul#catList li").removeClass('catSelected');
+
+		$(this).parent().addClass('catSelected');
+
+		if(catToShow != 'cat-0')
+			$('table#taskList tr').each(function( index ) {
+			  	if( !$(this).hasClass(catToShow))
+			  		$(this).hide();
+			  	else
+			  		$(this).show();
+
+			  	// console.log( index + ": " + $(this).text() );
+			});
+		else
+			$('table#taskList tr').show();
 	}
 
 
@@ -128,22 +222,23 @@ $(function() {
 
 
 
-
-	function addTableRow(model)
+	function addTableRow(model, blink)
 	{
 		var tabla = $('table#taskList')
 		var template = $("[data-template-name='task-row']").html();
-		// console.log(JSON.stringify( model.attributes));
+		
+		var cat = getCatBy("id",model.attributes.cat);
+		
+		model.attributes.catname = cat.name;
 
-		// model.attributes.important = model.attributes.important ? "star" : "";
-
-		tabla.append( Mustache.render(template,model.toJSON() ) );
+		tabla.prepend( Mustache.render(template,model.toJSON() ) );
 
 		$('tr#task-' + model.attributes.id + ' input[type="checkbox"]').prop('checked', model.attributes.done =="1" ? true : false);
 
 		$('tr#task-' + model.attributes.id + ' input[type="checkbox"]').on('click', function(e){
 			
 			updateTaskField( model.attributes.id, 'done', $(this).prop('checked') ? 1 : 0 );
+			$(this).parent().parent().removeClass('done-0 done-1').addClass($(this).prop('checked') ? 'done-1' : 'done-0');
 		});
 
 		$('tr#task-' + model.attributes.id + ' a.taskDelete').on('click', function(e){
@@ -159,17 +254,35 @@ $(function() {
 
 		});
 
-
+		
+		
 
 
 		$("#newTaskName").val('').focus();
 		$("#newTaskImportant").removeClass('btn-primary');
 		$("#newTaskCat").val('');
 
+		if(blink)
+		{
+			$('tr#task-' + model.attributes.id +' td').addClass('inserted');
+
+			setTimeout(function (){$('tr#task-' + model.attributes.id +' td').removeClass('inserted') },100);
+			;
+	    }
 
 		
 	}
 	
+	function getCatBy(key,value)
+	{
+		for(i in cats)
+		{
+			if( cats[i][key] == value )
+				return cats[i];
+		}
+
+
+	}
 
 
 
@@ -203,10 +316,44 @@ $(function() {
 	});
 
 
+
+	function showByStatus(e)
+	{
+		e.preventDefault();
+
+		var newStatus = $(this).attr('id').split("-")[1];
+		console.log( newStatus );
+
+		$("ul#statusList li").removeClass('catSelected');
+
+		$(this).parent().addClass('catSelected');
+
+		switch(newStatus)
+		{
+			case "0":
+				$("table#taskList tr.done-0").show();
+				$("table#taskList tr.done-1").hide();
+			break;
+			case "1":
+				$("table#taskList tr.done-0").hide();
+				$("table#taskList tr.done-1").show();
+			break;
+			default:
+				$("table#taskList tr").show();
+			break;
+		}
+	}
+
+
+
+
 	$('#newTaskCreate').on('click', addTask);
 
+	$('#catDelConfirm').on('click', confirmDeleteCat);
 
 
+	// Status list
+	$('ul#statusList li a').on('click', showByStatus);
 
 	/*VIEW STATE VARS*/
 
@@ -215,6 +362,9 @@ $(function() {
 	var LSkey = "linden-todos";
 	var LSprefix = LSkey + "_";
 	var catDefaultName = "Uncategorized";
+
+	var defaultState = "all";
+	var currentState = defaultState;
 	
 
 	/*INIT LOCALSTORAGE*/
@@ -232,6 +382,9 @@ $(function() {
 	cats = JSON.parse(localStorage[LSprefix+"cats"]);
 	
 	// Iterate through the saved cats and build the cats menu
+	
+	addCatRow({id:0, name:'All'});
+	
 	if(cats.length != 0)
 	{
 		for(i in cats)
@@ -245,6 +398,9 @@ $(function() {
 		// addCatRow({index:0, value:});
 		addCat(catDefaultName)
 	}
+
+	
+
 
 	// Iterate the saved data and send to addTableRow to be inserted in the table
 	if(todos.length != 0)
@@ -263,7 +419,7 @@ $(function() {
 
 			});
 
-			addTableRow(task);
+			addTableRow(task, false);
 
 		})
 	}
@@ -274,11 +430,13 @@ $(function() {
 	        return index == arr.indexOf(el);
 	    });
 	}
-	// alert(todos);
-
-	// alert(todos);
+	
 
 
+	// INITIALIZE DEFAULT CATEGORY
+	$('ul#catList li a#cat-0').trigger('click');
+
+	$('ul#statusList li a#status-0').trigger('click');
 
 
 });
